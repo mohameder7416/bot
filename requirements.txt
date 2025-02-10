@@ -1,0 +1,14 @@
+chromadb
+langchain
+streamlit
+pandas
+ollama
+openai
+fastapi
+pyprojroot
+langchain-community
+langchain_groq
+groq
+langchain_openai
+pandasql
+termcolor

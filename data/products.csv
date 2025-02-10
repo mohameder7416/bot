@@ -1,0 +1,20 @@
+vin,year,make,model,isadded,mileage,condition,title,price,price_type
+1HGCM82633A123456,2022,Honda,Civic,True,15000,new,clean title,25000,cash
+1FTRX18L5YNA12345,2020,Ford,F-150,True,30000,old,clean title,35000,downpayment
+2T1BURHE0GC123456,2018,Toyota,Corolla,False,45000,old,rebuilt,15000,cash
+3VWDB7AJ0EM123456,2021,Volkswagen,Jetta,True,12000,new,clean title,23000,downpayment
+5XYKT3A63EG123456,2019,Kia,Sorento,False,20000,old,clean title,27000,cash
+1C6RR7FT3JS123456,2020,Ram,1500,True,18000,new,clean title,42000,downpayment
+4S4BMBKQ9G3301234,2022,Subaru,Outback,True,5000,new,clean title,35000,cash
+3GNAXUEV0LS123456,2020,Chevrolet,Equinox,False,25000,old,clean title,22000,downpayment
+1FMCU9G99LUC12345,2021,Ford,Escape,True,10000,new,clean title,28000,cash
+1FTEX1C87GKE12345,2021,Ford,Ranger,True,9000,new,clean title,35000,cash
+1GT12YEG9FZ123456,2019,GMC,Sierra 1500,False,40000,old,rebuilt,28000,downpayment
+1C4PJMCX1LD123456,2020,Jeep,Cherokee,True,22000,old,clean title,27000,cash
+5N1AT2MT5HC123456,2021,Nissan,Rogue,True,8000,new,clean title,32000,downpayment
+2T3WFREV1KW123456,2022,Toyota,RAV4,True,12000,new,clean title,35000,cash
+5TFLU4EN0EX123456,2020,Toyota,Tacoma,False,50000,old,clean title,30000,downpayment
+1GTN1LEXXLZ123456,2021,GMC,Canyon,True,7000,new,clean title,35000,cash
+3VV3B7AX9LM123456,2022,Volkswagen,Atlas,True,10000,new,clean title,45000,cash
+1J4GB2XG1YW123456,2019,Jeep,Grand Cherokee,False,35000,old,clean title,29000,downpayment
+1FMZU7D57LUB12345,2020,Ford,Explorer,True,8000,new,clean title,37000,cash
