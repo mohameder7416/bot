@@ -1,17 +1,38 @@
-import pandasql as ps
-import pandas as pd
+import requests
 
+def get_products_info(base_url="http://0.0.0.0:8000/products", **filters):
+    """
+   get products informations from the  with optional filters.
+    
+    Parameters:
+       .base_url="http://0.0.0.0:8000/products"
+        filters (dict): A JSON object containing optional query string parameters for filtering products, including:
+            {
+                "vin": vin,
+                "year": year,
+                "make": make,
+                "model": model,
+                "isadded": isadded,
+                "mileage": mileage,
+                "condition": condition,
+                "title": title,
+                "price": price,
+                "price_type": price_type
+            }
+    
+    Returns:
+        list: A list of products matching the filters.
+    """
+    response = requests.get(base_url, params=filters)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": f"Failed to fetch products. Status code: {response.status_code}"}
 
-products_df= pd.read_csv("/home/mohamed/bot/data/products.csv")
-
-def get_products_info(sql_query:str, df:pd.DataFrame = products_df):
-    
-    
-    env={'products_df':df}
-    try :
-        return ps.sqldf(sql_query,env)
-    except Exception as e:
-        print(f"Error executing query: {str(e)}")
-        return None
-    
-    
+# Example usage:
+filters = {
+    "year": 2020,
+    }
+products = get_products_info(**filters)
+print(products)

@@ -82,7 +82,7 @@ class Agent:
         Returns:
         The response from executing the appropriate tool or the tool_input if no matching tool is found.
         """
-        agent_response_dict= self.think(prompt)
+        agent_response_dict, _= self.think(prompt)
         print("Agent response dict: ", agent_response_dict)
         
         tool_choice = agent_response_dict.get("tool_choice")
@@ -105,7 +105,7 @@ class Agent:
 # Example usage
 if __name__ == "__main__":
 
-    tools = [get_dealers_info]
+    tools = [get_products_info]
 
 
     # Uncoment below to run with OpenAI
