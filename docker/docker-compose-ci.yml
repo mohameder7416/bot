@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ../src:/var/www/html:rw
+      - ./configs/bot.dev.env:/var/www/html/.env
+    ports:
+      - "8200:8000"
+    networks:
+      - bot

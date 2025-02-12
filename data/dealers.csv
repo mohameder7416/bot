@@ -1,8 +1,8 @@
-dealer_name,address,phone,credit_app_link,inventory_link,offers_test_drive,welcome_message,shipping,trade_ins,opening_hours
-ABC Motors,"123 Main St, City",(123) 456-7890,https://abc-motors.com/credit-app,https://abc-motors.com/inventory,True,Welcome to ABC Motors! We’re here to help.,True,True,Mon-Fri: 9AM-7PM; Sat: 10AM-6PM; Sun: Closed
-XYZ Auto,"456 Elm St, Town",(987) 654-3210,https://xyz-auto.com/credit,https://xyz-auto.com/inventory,False,Find your dream car at XYZ Auto.,False,True,Mon-Sat: 8AM-8PM; Sun: 11AM-4PM
-CarHub,"789 Oak Ave, Village",(555) 123-4567,https://carhub.com/apply,https://carhub.com/cars,True,Welcome to CarHub! Let’s get you on the road.,True,False,Mon-Fri: 8AM-6PM; Sat: 9AM-5PM; Sun: Closed
-Elite Cars,"101 Luxury Rd, Metropolis",(321) 654-9870,https://elitecars.com/finance,https://elitecars.com/inventory,True,Luxury and performance at Elite Cars.,False,True,Mon-Sun: 9AM-9PM
-Speedy Auto,"202 Fast Ln, City",(444) 222-3333,https://speedyauto.com/credit,https://speedyauto.com/inventory,False,"Speedy Auto - Fast deals, great wheels!",True,True,Mon-Fri: 8AM-7PM; Sat-Sun: 9AM-5PM
-Auto Planet,"303 Galaxy Blvd, Cosmos City",(555) 789-1234,https://autoplanet.com/credit,https://autoplanet.com/inventory,True,Explore a universe of cars at Auto Planet!,True,True,Mon-Fri: 9AM-8PM; Sat: 10AM-6PM; Sun: Closed
-Metro Cars,"505 Downtown Rd, Big City",(777) 456-9876,https://metrocars.com/credit,https://metrocars.com/inventory,True,"Your city, your car, your way at Metro Cars!",False,True,Mon-Sat: 8AM-8PM; Sun: 12PM-5PM
+dealer_id,dealer_name,address,phone,credit_app_link,inventory_link,offers_test_drive,welcome_message,shipping,trade_ins,opening_hours
+1,ABC Motors,"123 Main St, City",(123) 456-7890,https://abc-motors.com/credit-app,https://abc-motors.com/inventory,True,Welcome to ABC Motors! We’re here to help.,True,True,Mon-Fri: 9AM-7PM; Sat: 10AM-6PM; Sun: Closed
+2,XYZ Auto,"456 Elm St, Town",(987) 654-3210,https://xyz-auto.com/credit,https://xyz-auto.com/inventory,False,Find your dream car at XYZ Auto.,False,True,Mon-Sat: 8AM-8PM; Sun: 11AM-4PM
+3,CarHub,"789 Oak Ave, Village",(555) 123-4567,https://carhub.com/apply,https://carhub.com/cars,True,Welcome to CarHub! Let’s get you on the road.,True,False,Mon-Fri: 8AM-6PM; Sat: 9AM-5PM; Sun: Closed
+4,Elite Cars,"101 Luxury Rd, Metropolis",(321) 654-9870,https://elitecars.com/finance,https://elitecars.com/inventory,True,Luxury and performance at Elite Cars.,False,True,Mon-Sun: 9AM-9PM
+5,Speedy Auto,"202 Fast Ln, City",(444) 222-3333,https://speedyauto.com/credit,https://speedyauto.com/inventory,False,"Speedy Auto - Fast deals, great wheels!",True,True,Mon-Fri: 8AM-7PM; Sat-Sun: 9AM-5PM
+6,Auto Planet,"303 Galaxy Blvd, Cosmos City",(555) 789-1234,https://autoplanet.com/credit,https://autoplanet.com/inventory,True,Explore a universe of cars at Auto Planet!,True,True,Mon-Fri: 9AM-8PM; Sat: 10AM-6PM; Sun: Closed
+7,Metro Cars,"505 Downtown Rd, Big City",(777) 456-9876,https://metrocars.com/credit,https://metrocars.com/inventory,True,"Your city, your car, your way at Metro Cars!",False,True,Mon-Sat: 8AM-8PM; Sun: 12PM-5PM

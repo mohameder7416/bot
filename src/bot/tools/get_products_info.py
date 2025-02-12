@@ -30,9 +30,4 @@ def get_products_info(base_url="http://0.0.0.0:8000/products", **filters):
     else:
         return {"error": f"Failed to fetch products. Status code: {response.status_code}"}
 
-# Example usage:
-filters = {
-    "year": 2020,
-    }
-products = get_products_info(**filters)
-print(products)
+

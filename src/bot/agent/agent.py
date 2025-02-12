@@ -1,7 +1,6 @@
-import sys
+
+import sys 
 sys.path.append('..')
-
-
 from prompts.prompts import agent_system_prompt_template
 from models.groq_model import GroqModel
 from models.openai_model import OpenAIModel
@@ -10,10 +9,11 @@ from tools.get_dealers_info import get_dealers_info
 from tools.get_products_info import get_products_info
 from toolbox.toolbox import ToolBox
 from termcolor import colored
+import json
 
 
 class Agent:
-    def __init__(self, tools, model_service, model_name, stop=None):
+    def __init__(self, tools, model_service, model_name=None, stop=None):
         """
         Initializes the agent with a list of tools and a model.
 
@@ -24,7 +24,9 @@ class Agent:
         """
         self.tools = tools
         self.model_service = model_service
-        self.model_name = model_name
+        self.model_name = model_name if model_name is not None else (
+            "gpt-3.5-turbo" if model_service == OpenAIModel else None
+        )
         self.stop = stop
 
     def prepare_tools(self):
@@ -50,10 +52,11 @@ class Agent:
         dict: The response from the model as a dictionary.
         """
         tool_descriptions = self.prepare_tools()
-        agent_system_prompt = agent_system_prompt_template.format(tool_descriptions=tool_descriptions)
+        agent_system_prompt = agent_system_prompt_template.format(
+            tool_descriptions=tool_descriptions, dealer_prompt="start the conversation with (hello everyone and be funny)"
+        )
 
         # Create an instance of the model service with the system prompt
-
         if self.model_service == OllamaModel:
             model_instance = self.model_service(
                 model=self.model_name,
@@ -82,13 +85,14 @@ class Agent:
         Returns:
         The response from executing the appropriate tool or the tool_input if no matching tool is found.
         """
-        agent_response_dict, _= self.think(prompt)
+        agent_response_dict = self.think(prompt)
         print("Agent response dict: ", agent_response_dict)
-        
+
         tool_choice = agent_response_dict.get("tool_choice")
         print("Tool choice: ", tool_choice)
         tool_input = agent_response_dict.get("tool_input")
         print("Tool input: ", tool_input)
+
         for tool in self.tools:
             if tool.__name__ == tool_choice:
                 response = tool(tool_input)
@@ -98,32 +102,24 @@ class Agent:
                 # return tool(tool_input)
 
         print(colored(tool_input, 'cyan'))
-        
-        return
+
+        return tool_input
 
 
-# Example usage
 if __name__ == "__main__":
+    tools = [get_dealers_info, get_products_info]
 
-    tools = [get_products_info]
-
-
-    # Uncoment below to run with OpenAI
+    # Uncomment below to run with OpenAI
     model_service = OpenAIModel
-    model_name = 'gpt-3.5-turbo'
-     # static for openai
+
+    # Static for OpenAI
     stop = None
-
-    # Uncomment below to run with Ollama
-   #  model_service = OllamaModel
-    # model_name = 'llama3:instruct'
-    # stop = "<|eot_id|>"
-
-    agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
-
+    agent = Agent(tools=tools, model_service=model_service, stop=stop)
     while True:
         prompt = input("Ask me anything: ")
         if prompt.lower() == "exit":
             break
-    
+
         agent.work(prompt)
+
+    # Uncomment below to run with Ollama
