@@ -77,34 +77,69 @@ class Agent:
 
     def work(self, prompt):
         """
-        Parses the dictionary returned from think and executes the appropriate tool.
+        Parses the dictionary returned from think, executes the appropriate tool,
+        and provides a complete answer to the user.
 
         Parameters:
         prompt (str): The user query to generate a response for.
 
         Returns:
-        The response from executing the appropriate tool or the tool_input if no matching tool is found.
+        str: A complete answer to the user's query.
         """
         agent_response_dict = self.think(prompt)
         print("Agent response dict: ", agent_response_dict)
-
+        
         tool_choice = agent_response_dict.get("tool_choice")
         print("Tool choice: ", tool_choice)
         tool_input = agent_response_dict.get("tool_input")
         print("Tool input: ", tool_input)
-
+        
+        tool_response = None
         for tool in self.tools:
             if tool.__name__ == tool_choice:
-                response = tool(tool_input)
+                tool_response = tool(tool_input)
+                print(colored("Tool response: ", 'yellow'), colored(tool_response, 'cyan'))
+                break
 
-                print(colored(response, 'cyan'))
-                return
-                # return tool(tool_input)
+        if tool_response:
+            # Generate a complete answer using the tool's response
+            complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
+        else:
+            complete_answer = tool_input  # If no tool was used, use the original response
 
-        print(colored(tool_input, 'cyan'))
+        print(colored("Complete answer: ", 'green'), colored(complete_answer, 'cyan'))
+        return complete_answer
+    def generate_complete_answer(self, original_prompt, tool_choice, tool_input, tool_response):
+        """
+        Generates a complete answer based on the original prompt, tool choice, input, and response.
 
-        return tool_input
+        Parameters:
+        original_prompt (str): The original user query.
+        tool_choice (str): The name of the tool that was used.
+        tool_input (str): The input provided to the tool.
+        tool_response (str): The response received from the tool.
 
+        Returns:
+        str: A complete answer to the user's query.
+        """
+        completion_prompt = f"""
+        Original user query: {original_prompt}
+        Tool used: {tool_choice}
+        Tool input: {tool_input}
+        Tool response: {tool_response}
+
+        Based on the above information, provide a complete and helpful answer to the user's original query.
+        Make sure to incorporate the tool's response into your answer.
+        """
+
+        model_instance = self.model_service(
+            model=self.model_name,
+            system_prompt="You are a helpful assistant providing complete answers based on tool responses.",
+            temperature=0
+        )
+
+        complete_answer = model_instance.generate_text(completion_prompt)
+        return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
 
 if __name__ == "__main__":
     tools = [get_dealers_info, get_products_info]
