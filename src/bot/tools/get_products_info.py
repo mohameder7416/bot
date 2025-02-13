@@ -23,7 +23,7 @@ def get_products_info(*args, **kwargs):
     Returns:
         dict: A dictionary containing either a list of products or an error message.
     """
-    base_url = "http://0.0.0.0:8001/products"
+    base_url_products = "http://0.0.0.0:8001/products"
     
     # Handle both dictionary input and keyword arguments
     if args and isinstance(args[0], dict):
@@ -39,7 +39,7 @@ def get_products_info(*args, **kwargs):
             return {"error": "Invalid year provided"}
     
     try:
-        response = requests.get(base_url, params=filters)
+        response = requests.get(base_url_products, params=filters)
         response.raise_for_status()  # Raise an exception for bad status codes
         products = response.json()
         if not products:
