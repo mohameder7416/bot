@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_community.callbacks.manager import get_openai_callback
 from dotenv import load_dotenv
-
+import re
 load_dotenv()
 
 class OpenAIModel:
@@ -42,15 +42,17 @@ class OpenAIModel:
         with get_openai_callback() as cb:
             response = self.chat.invoke(messages)
             
+            # Try to extract JSON from the response content
+            json_match = re.search(r'```json\s*(.*?)\s*```', response.content, re.DOTALL)
+            if json_match:
+                try:
+                    return json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    pass
+
+            # If no JSON found in code block, try to parse the entire content
             try:
-                # Attempt to parse the response content as JSON
-                response_dict = json.loads(response.content)
-                
-                # If parsing succeeds, return the parsed dictionary
-                print(f"\n\nResponse from OpenAI model: {response_dict}")
-                return response_dict
-                
-            except json.JSONDecodeError as e:
-                print(f"Warning: Response parsing error - {str(e)}")
-                # If parsing fails, return the original content as a string
+                return json.loads(response.content)
+            except json.JSONDecodeError:
+                print(f"Warning: Unable to parse response as JSON: {response.content}")
                 return {"tool_choice": "no tool", "tool_input": response.content}

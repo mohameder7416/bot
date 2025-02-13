@@ -80,11 +80,19 @@ class Agent:
         if tool_choice != "no tool":
             for tool in self.tools:
                 if tool.__name__ == tool_choice:
-                    if isinstance(tool_input, dict):
+                    if isinstance(tool_input, dict) and 'args' in tool_input:
+                        tool_response = tool(**tool_input['args'])
+                    elif isinstance(tool_input, dict):
                         tool_response = tool(**tool_input)
                     else:
                         tool_response = tool(tool_input)
                     break
+
+        if tool_response:
+            print(f"Debug - Tool response: {tool_response}")
+            return self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
+        else:
+            return agent_response_dict.get('tool_input', "I'm sorry, I couldn't process that request.")
 
         complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
         return complete_answer
