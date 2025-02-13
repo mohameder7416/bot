@@ -14,6 +14,9 @@ from bot.tools.get_products_info import get_products_info
 from bot.toolbox.toolbox import ToolBox
 from termcolor import colored
 import json
+import re 
+import json
+from termcolor import colored
 
 class Agent:
     def __init__(self, tools, model_service, model_name=None, stop=None):
@@ -28,30 +31,41 @@ class Agent:
         toolbox = ToolBox()
         toolbox.store(self.tools)
         tool_descriptions = toolbox.tools()
-        return tool_descriptions
+        # Enhance tool descriptions
+        enhanced_descriptions = []
+        for tool in tool_descriptions:
+            if "get_dealers_info" in tool:
+                enhanced_descriptions.append(f"{tool} Use this tool for queries about dealers, their locations, or dealer information.")
+            elif "get_products_info" in tool:
+                enhanced_descriptions.append(f"{tool} Use this tool for queries about products, their details, or product information.")
+            else:
+                enhanced_descriptions.append(tool)
+        return "\n".join(enhanced_descriptions)
 
     def think(self, prompt):
         tool_descriptions = self.prepare_tools()
         agent_system_prompt = agent_system_prompt_template.format(
-            tool_descriptions=tool_descriptions, dealer_prompt="start the conversation with (hello everyone and be funny)"
+            tool_descriptions=tool_descriptions, 
+            dealer_prompt="start the conversation with (hello everyone and be funny)"
         )
 
-        if self.model_service == OllamaModel:
-            model_instance = self.model_service(
-                model=self.model_name,
-                system_prompt=agent_system_prompt,
-                temperature=0,
-                stop=self.stop
-            )
-        else:
-            model_instance = self.model_service(
-                model=self.model_name,
-                system_prompt=agent_system_prompt,
-                temperature=0
-            )
+        thinking_prompt = f"""
+        User query: {prompt}
 
-        agent_response_dict = model_instance.generate_text(prompt)
-        return agent_response_dict
+        Analyze this query carefully. If it relates to dealers or products, you MUST use an appropriate tool.
+        For dealer information, use get_dealers_info. For product information, use get_products_info.
+        Only use "no tool" if the query absolutely cannot be answered with the available tools.
+
+        Respond in the required JSON format with 'tool_choice' and 'tool_input'.
+        """
+
+        model_instance = self.model_service(
+            model=self.model_name,
+            system_prompt=agent_system_prompt,
+            temperature=0
+        )
+
+        return model_instance.generate_text(thinking_prompt)
 
     def work(self, prompt):
         agent_response_dict = self.think(prompt)
@@ -59,17 +73,20 @@ class Agent:
         tool_choice = agent_response_dict.get("tool_choice")
         tool_input = agent_response_dict.get("tool_input")
         
+        print(f"Debug - Tool chosen: {tool_choice}")
+        print(f"Debug - Tool input: {tool_input}")
+        
         tool_response = None
-        for tool in self.tools:
-            if tool.__name__ == tool_choice:
-                tool_response = tool(tool_input)
-                break
+        if tool_choice != "no tool":
+            for tool in self.tools:
+                if tool.__name__ == tool_choice:
+                    if isinstance(tool_input, dict):
+                        tool_response = tool(**tool_input)
+                    else:
+                        tool_response = tool(tool_input)
+                    break
 
-        if tool_response:
-            complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
-        else:
-            complete_answer = tool_input
-
+        complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
         return complete_answer
 
     def generate_complete_answer(self, original_prompt, tool_choice, tool_input, tool_response):
@@ -80,7 +97,8 @@ class Agent:
         Tool response: {tool_response}
 
         Based on the above information, provide a complete and helpful answer to the user's original query.
-        Make sure to incorporate the tool's response into your answer.
+        Make sure to incorporate the tool's response into your answer if a tool was used.
+        If no tool was used, provide a direct response to the query.
         """
 
         model_instance = self.model_service(
@@ -90,5 +108,26 @@ class Agent:
         )
 
         complete_answer = model_instance.generate_text(completion_prompt)
-        return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
+        if isinstance(complete_answer, dict):
+            return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
+        return complete_answer
+
+    def run(self):
+        print(colored("Welcome to the Agent! Type 'exit' to quit.", 'green'))
+        while True:
+            prompt = input(colored("Ask me anything: ", 'cyan'))
+            if prompt.lower() == "exit":
+                break
+            
+            answer = self.work(prompt)
+            print(colored(f"Agent: {answer}", 'yellow'))
+
+if __name__ == "__main__":
+    tools = [get_products_info, get_dealers_info]
+    model_service = OpenAIModel
+    model_name = 'gpt-3.5-turbo'
+    stop = None
+
+    agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
+    agent.run()
 

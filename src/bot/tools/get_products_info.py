@@ -1,33 +1,50 @@
 import requests
 
-def get_products_info(base_url="http://0.0.0.0:8000/products", **filters):
+def get_products_info(*args, **kwargs):
     """
-   get products informations from the  with optional filters.
+    Get products information from the API with optional filters.
     
     Parameters:
-       .base_url="http://0.0.0.0:8000/products"
-        filters (dict): A JSON object containing optional query string parameters for filtering products, including:
-            {
-                "vin": vin,
-                "year": year,
-                "make": make,
-                "model": model,
-                "isadded": isadded,
-                "mileage": mileage,
-                "condition": condition,
-                "title": title,
-                "price": price,
-                "price_type": price_type
-            }
+        args: A single dictionary of filters (optional)
+        kwargs: Keyword arguments for filters
+    
+    Filters can include:
+        vin (str): Vehicle Identification Number
+        year (int): Year of manufacture
+        make (str): Make of the vehicle
+        model (str): Model of the vehicle
+        isadded (bool): Whether the product is added
+        mileage (int): Mileage of the vehicle
+        condition (str): Condition of the vehicle
+        title (str): Title of the product
+        price (float): Price of the product
+        price_type (str): Type of price
     
     Returns:
-        list: A list of products matching the filters.
+        dict: A dictionary containing either a list of products or an error message.
     """
-    response = requests.get(base_url, params=filters)
+    base_url = "http://0.0.0.0:8001/products"
     
-    if response.status_code == 200:
-        return response.json()
+    # Handle both dictionary input and keyword arguments
+    if args and isinstance(args[0], dict):
+        filters = args[0]
     else:
-        return {"error": f"Failed to fetch products. Status code: {response.status_code}"}
-
+        filters = kwargs
+    
+    # Convert year to integer if it's a string
+    if 'year' in filters and isinstance(filters['year'], str):
+        try:
+            filters['year'] = int(filters['year'])
+        except ValueError:
+            return {"error": "Invalid year provided"}
+    
+    try:
+        response = requests.get(base_url, params=filters)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        products = response.json()
+        if not products:
+            return {"message": "No products found matching the criteria."}
+        return {"products": products}
+    except requests.RequestException as e:
+        return {"error": f"Failed to fetch products. Error: {str(e)}"}
 

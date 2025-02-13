@@ -43,29 +43,14 @@ class OpenAIModel:
             response = self.chat.invoke(messages)
             
             try:
-                # Attempt to parse the entire response content as JSON
+                # Attempt to parse the response content as JSON
                 response_dict = json.loads(response.content)
                 
-                # Ensure the response has the expected keys
-                if 'tool_choice' not in response_dict or 'tool_input' not in response_dict:
-                    raise ValueError("Response does not contain expected keys")
+                # If parsing succeeds, return the parsed dictionary
+                print(f"\n\nResponse from OpenAI model: {response_dict}")
+                return response_dict
                 
-                # If tool_input is a string, try to parse it as JSON
-                if isinstance(response_dict['tool_input'], str):
-                    try:
-                        response_dict['tool_input'] = json.loads(response_dict['tool_input'])
-                    except json.JSONDecodeError:
-                        # If parsing fails, leave it as a string
-                        pass
-                
-            except (json.JSONDecodeError, ValueError) as e:
+            except json.JSONDecodeError as e:
                 print(f"Warning: Response parsing error - {str(e)}")
-                response_dict = {
-                    "tool_choice": "no tool",
-                    "tool_input": response.content
-                }
-            
-            print(f"\n\nResponse from OpenAI model: {response_dict}")
-            
-            return response_dict
-
+                # If parsing fails, return the original content as a string
+                return {"tool_choice": "no tool", "tool_input": response.content}
