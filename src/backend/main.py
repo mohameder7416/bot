@@ -14,48 +14,25 @@ from bot.models.openai_model import OpenAIModel
 from bot.models.ollama_model import OllamaModel
 from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
-
+from bot.variables import variables
 # Load environment variables
 load_dotenv()
 
 app = FastAPI()
 
-# Database setup
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
-class SelectedItem(Base):
-    __tablename__ = "selected_item"
-
-    id = Column(Integer, primary_key=True, index=True)
-    dealers_id = Column(Integer, index=True)  # Changed to Integer
-
-Base.metadata.create_all(bind=engine)
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 class AgentRequest(BaseModel):
     prompt: str
     model_service: str
     model_name: Optional[str] = None
     dealers_id: int  # Changed to int
+    lead_id :int
+    lead_crm_id : int 
 
 @app.post("/agent")
-async def run_agent(request: AgentRequest, db: Session = Depends(get_db)):
+async def run_agent(request: AgentRequest):
     tools = [get_dealers_info, get_products_info]
     
     model_service_map = {
@@ -74,22 +51,17 @@ async def run_agent(request: AgentRequest, db: Session = Depends(get_db)):
     agent = Agent(tools=tools, model_service=model_service, model_name=request.model_name, stop=stop)
     
     try:
+        # Execute the agent's work
         result = agent.work(request.prompt)
         
-        # Check if a record with the given dealers_id already exists
-        existing_item = db.query(SelectedItem).filter(SelectedItem.dealers_id == request.dealers_id).first()
+        # Update variables.py with lead_id, lead_crm_id, and dealers_id
+        variables.dealer_id = request.dealers_id
+        variables.lead_id = request.lead_id
+        variables.lead_crm_id = request.lead_crm_id
         
-        if existing_item:
-            # Update the existing record
-            existing_item.dealers_id = request.dealers_id
-            db.commit()
-        else:
-            # Add a new record
-            new_item = SelectedItem(dealers_id=request.dealers_id)
-            db.add(new_item)
-            db.commit()
-        
-        return {"result": result, "dealers_id": request.dealers_id}
+        return {
+            "result": result
+            
+        }
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
