@@ -1,5 +1,5 @@
 import requests
-
+import os
 def get_products_info(*args, **kwargs):
     """
     Get products information from the API with optional filters.
@@ -23,7 +23,7 @@ def get_products_info(*args, **kwargs):
     Returns:
         dict: A dictionary containing either a list of products or an error message.
     """
-    base_url_products = "http://0.0.0.0:8001/products"
+    base_url_products = os.getenv("base_url_products")
     
     # Handle both dictionary input and keyword arguments
     if args and isinstance(args[0], dict):
