@@ -60,8 +60,9 @@ async def run_agent(request: AgentRequest):
         variables.lead_crm_id = request.lead_crm_id
         
         return {
-            "result": result
-            
+            "result": result,
+            "dealers_id": variables.dealer_id,
+           
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
