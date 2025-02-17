@@ -28,11 +28,17 @@ class DataBase:
             return None  # Return None if connection fails
 
     # Get any value from database using a SELECT query
-    def readQuery(self, conn, query, data=None):
+    def readQuery(self, conn, query, data=None,raw=False):
         try:
             with conn.cursor() as cur:
-                cur.execute(query, data if data else None)
+                
+                if raw:
+                    cur.execute(query)
+                else :
+                    cur.execute(query, data if data else None)
                 rows = cur.fetchall()
+                
+  
             return rows
         except Error as e:
             error_mes = f"readQuery function => {str(e)}"

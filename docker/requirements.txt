@@ -13,3 +13,4 @@ langchain_openai
 pandasql
 termcolor
 psycopg2-binary
+PyJWT

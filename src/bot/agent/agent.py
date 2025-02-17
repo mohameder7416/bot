@@ -17,7 +17,7 @@ import json
 import re 
 import json
 from termcolor import colored
-
+from utils.get_dealer_prompt import get_dealer_prompt
 class Agent:
     def __init__(self, tools, model_service, model_name=None, stop=None):
         self.tools = tools
@@ -46,7 +46,7 @@ class Agent:
         tool_descriptions = self.prepare_tools()
         agent_system_prompt = agent_system_prompt_template.format(
             tool_descriptions=tool_descriptions, 
-            dealer_prompt="start the conversation with (hello everyone and be funny)"
+            dealer_prompt=get_dealer_prompt()
         )
 
         thinking_prompt = f"""
@@ -54,8 +54,7 @@ class Agent:
 
         Analyze this query carefully. If it relates to dealers or products, you MUST use an appropriate tool.
         For dealer information, use get_dealers_info. For product information, use get_products_info.
-        Only use "no tool" if the query absolutely cannot be answered with the available tools.
-
+       
         Respond in the required JSON format with 'tool_choice' and 'tool_input'.
         """
 
