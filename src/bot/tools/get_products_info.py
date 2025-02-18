@@ -1,5 +1,10 @@
 import requests
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
 def get_products_info(*args, **kwargs):
     """
     Get products information from the API with optional filters.

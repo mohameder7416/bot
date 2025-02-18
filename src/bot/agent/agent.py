@@ -11,6 +11,7 @@ from bot.models.openai_model import OpenAIModel
 from bot.models.ollama_model import OllamaModel
 from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
+from bot.tools.make_appointment import make_appointment
 from bot.toolbox.toolbox import ToolBox
 from termcolor import colored
 import json
@@ -38,6 +39,8 @@ class Agent:
                 enhanced_descriptions.append(f"{tool} Use this tool for queries about dealers, their locations, or dealer information.")
             elif "get_products_info" in tool:
                 enhanced_descriptions.append(f"{tool} Use this tool for queries about products, their details, or product information.")
+            elif "make_appointment" in tool:
+                enhanced_descriptions.append(f"{tool} Use this tool for Generate a link to make an appointment between the customer and the dealer")    
             else:
                 enhanced_descriptions.append(tool)
         return "\n".join(enhanced_descriptions)
@@ -52,8 +55,8 @@ class Agent:
         thinking_prompt = f"""
         User query: {prompt}
 
-        Analyze this query carefully. If it relates to dealers or products, you MUST use an appropriate tool.
-        For dealer information, use get_dealers_info. For product information, use get_products_info.
+        Analyze this query carefully. If it relates to dealers or products or apppointement, you MUST use an appropriate tool.
+        For dealer information, use get_dealers_info. For product information, use get_products_info. , for making a appointement use make_appointement
        
         Respond in the required JSON format with 'tool_choice' and 'tool_input'.
         """
@@ -130,7 +133,7 @@ class Agent:
             print(colored(f"Agent: {answer}", 'yellow'))
 
 if __name__ == "__main__":
-    tools = [get_products_info, get_dealers_info]
+    tools = [get_products_info, get_dealers_info,make_appointment]
     model_service = OpenAIModel
     model_name = 'gpt-3.5-turbo'
     stop = None

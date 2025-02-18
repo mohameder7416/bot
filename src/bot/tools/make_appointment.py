@@ -1,12 +1,18 @@
 
+import sys
+sys.path.append('..')
 from utils.load_variables import load_variables
 import os 
-import dt 
+import datetime as dt
 import jwt
 import json
 import requests
-secret_key=os.getenv("secret_key")
+from dotenv import load_dotenv
+load_dotenv()
+secret_key = str(os.getenv("secret_key", ""))
+print("secret_key",secret_key)
 PWA_API_CRM=os.getenv("PWA_API_CRM")
+print("PWA_API_CRM",PWA_API_CRM)
 
 variables=load_variables()
 lead_id_crm=variables["lead_crm_id"]
@@ -36,10 +42,14 @@ def create_token():
 
 
 
-def make_appointement():
+def make_appointment():
     """
    Generate a link to make an appointment between the customer and the dealer. 
-   The link should contain available time slots when the dealer is available
+   The link  contain available time slots when the dealer is available
+    
+    
+    Returns:
+        string: A link to book the appointement.
     
     
     """
@@ -59,4 +69,4 @@ def make_appointement():
 
     
     
-    
+ 
