@@ -1,5 +1,5 @@
-from utils.load_variables import load_variables
-from utils.db import DataBase
+from bot.utils.load_variables import load_variables
+from bot.utils.db import DataBase
 db = DataBase()
 conn=db.connexion()
 def get_dealer_prompt():
@@ -15,3 +15,5 @@ def get_dealer_prompt():
 
 
 
+if __name__=="main":
+    print(get_dealer_prompt())

@@ -1,7 +1,7 @@
 
 import sys
 sys.path.append('..')
-from utils.load_variables import load_variables
+from bot.utils.load_variables import load_variables
 import os 
 import datetime as dt
 import jwt

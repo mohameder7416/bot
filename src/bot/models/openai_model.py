@@ -9,7 +9,7 @@ import re
 load_dotenv()
 
 class OpenAIModel:
-    def __init__(self, model="gpt-3.5-turbo", system_prompt=None, temperature=0.7):
+    def __init__(self, model="gpt-4o", system_prompt=None, temperature=0.7):
         self.temperature = temperature
         self.model = model
         self.system_prompt = system_prompt

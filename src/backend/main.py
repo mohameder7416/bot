@@ -15,6 +15,7 @@ from bot.models.openai_model import OpenAIModel
 from bot.models.ollama_model import OllamaModel
 from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
+from bot.tools.make_appointment import make_appointment
 from bot.variables.variables import variables, load_variables, save_variables
 
 
@@ -34,7 +35,7 @@ class AgentRequest(BaseModel):
 
 @app.post("/agent")
 async def run_agent(request: AgentRequest):
-    tools = [get_dealers_info, get_products_info]
+    tools = [get_dealers_info, get_products_info,make_appointment]
     
     model_service_map = {
         "openai": OpenAIModel,

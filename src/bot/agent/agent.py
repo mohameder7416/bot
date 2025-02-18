@@ -18,13 +18,13 @@ import json
 import re 
 import json
 from termcolor import colored
-from utils.get_dealer_prompt import get_dealer_prompt
+from bot.utils.get_dealer_prompt import get_dealer_prompt
 class Agent:
     def __init__(self, tools, model_service, model_name=None, stop=None):
         self.tools = tools
         self.model_service = model_service
         self.model_name = model_name if model_name is not None else (
-            "gpt-3.5-turbo" if model_service == OpenAIModel else None
+            "gpt-4o" if model_service == OpenAIModel else None
         )
         self.stop = stop
 
@@ -135,7 +135,7 @@ class Agent:
 if __name__ == "__main__":
     tools = [get_products_info, get_dealers_info,make_appointment]
     model_service = OpenAIModel
-    model_name = 'gpt-3.5-turbo'
+    model_name = 'gpt-4o'
     stop = None
 
     agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
