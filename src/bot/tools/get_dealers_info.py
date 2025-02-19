@@ -43,7 +43,13 @@ offer_finance: Indicates whether the dealership provides financing options for c
         str: Query results as a string, or None if an error occurs.
     """
     load_dotenv()
-    db = DataBase()
+   
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_HOST = os.getenv("DB_HOST")
+    DB_PORT = os.getenv("DB_PORT")
+    DB_NAME = os.getenv("DB_NAME")
+    engine = create_engine(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
     
     if isinstance(sql_query, dict):
         sql_query = sql_query.get('sql_query', '')
@@ -52,21 +58,11 @@ offer_finance: Indicates whether the dealership provides financing options for c
         # Load dealer_id from JSON file
         variables = load_variables()
         dealer_id = variables["dealer_id"]
-        conn = db.connexion()
-        if conn is None:
-            raise Exception("Failed to connect to the database")
+        dealers_df = pd.read_sql_query(f"SELECT * FROM dealers_info WHERE dealer_id = {dealer_id}", engine)
+        env = {'dealers_df': dealers_df}
+        result_df = ps.sqldf(sql_query, env)
+        print("result_df",result_df)
         
-        
-        dealers_query = f"SELECT * FROM dealers_info WHERE dealer_id = %s"
-        dealers_data = db.readQuery(conn, dealers_query, (dealer_id,))
-        
-        dealers_df = pd.DataFrame(dealers_data, columns=[
-            'dealer_id', 'dealer_name', 'address', 'phone', 'credit_app_link', 'inventory_link',
-            'offers_test_drive', 'welcome_message', 'shipping', 'trade_ins', 'opening_hours', 'offer_finance'
-        ])
-        
-        result_df = pd.read_sql_query(sql_query, conn)
-        conn.close()
         return result_df.to_string(index=False)
         
         
