@@ -50,5 +50,3 @@ def make_appointment():
 
     
     
-if __name__=="__main__":
-    make_appointment()     
