@@ -80,15 +80,21 @@ class Agent:
         
         tool_response = None
         if tool_choice != "no tool":
-            for tool in self.tools:
-                if tool.__name__ == tool_choice:
-                    if isinstance(tool_input, dict) and 'args' in tool_input:
+         for tool in self.tools:
+            if tool.__name__ == tool_choice:
+                if tool.__name__ == "make_appointment":
+                    # Call make_appointment without arguments
+                    tool_response = tool()
+                elif isinstance(tool_input, dict):
+                    if 'args' in tool_input:
                         tool_response = tool(**tool_input['args'])
-                    elif isinstance(tool_input, dict):
-                        tool_response = tool(**tool_input)
+                    elif 'kwargs' in tool_input:
+                        tool_response = tool(**tool_input['kwargs'])
                     else:
-                        tool_response = tool(tool_input)
-                    break
+                        tool_response = tool(**tool_input)
+                else:
+                    tool_response = tool(tool_input)
+                break
 
         if tool_response:
             print(f"Debug - Tool response: {tool_response}")
