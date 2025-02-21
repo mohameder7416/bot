@@ -21,7 +21,7 @@ def get_stored_arguments():
     return {}
 
 
-def save_arguments(lead_id_crm, new_arguments):
+def save_arguments(lead_id, new_arguments):
     """
     Save arguments for a specific lead ID to the single JSON file.
     Updates existing arguments instead of overwriting them.
@@ -32,13 +32,13 @@ def save_arguments(lead_id_crm, new_arguments):
     all_arguments = get_stored_arguments()
     
     # Get existing arguments for this lead (or empty dict if none exist)
-    existing_args = all_arguments.get(str(lead_id_crm), {})
+    existing_args = all_arguments.get(str(lead_id), {})
     
     # Update existing arguments with new ones
     existing_args.update(new_arguments)
     
     # Save updated arguments for this lead
-    all_arguments[str(lead_id_crm)] = existing_args
+    all_arguments[str(lead_id)] = existing_args
     
     # Save all arguments back to file
     with open(file_path, 'w') as f:
@@ -69,7 +69,8 @@ def get_products_info(*args, **kwargs):
         dict: A dictionary containing either a list of products or an error message.
     """
     variables = load_variables()
-    lead_id = variables.get("lead_id")
+    lead_id = variables["lead_id"]
+    dealer_id=variables["dealer_id"]
     if not lead_id:
         raise ValueError("lead_id not found in variables")
 
@@ -117,7 +118,7 @@ def get_products_info(*args, **kwargs):
             api_filters.append([field, operator, value])
 
     data = {
-        "user_id": filters.get('dealer_id', 102262),
+        "user_id": dealer_id,
         "status": "published",
         "filters": api_filters,
         "fields": [
