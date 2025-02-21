@@ -1,6 +1,4 @@
-chromadb==0.5.23
 langchain==0.3.11
-streamlit==1.42.0
 pandas==2.2.3
 ollama==0.4.7
 openai==1.61.0
