@@ -1,7 +1,8 @@
+# File: bot/agent/agent.py
+
 import sys
 from pathlib import Path
 
-# Add the project root to the Python path
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
@@ -15,10 +16,8 @@ from bot.tools.make_appointment import make_appointment
 from bot.toolbox.toolbox import ToolBox
 from termcolor import colored
 import json
-import re 
-import json
-from termcolor import colored
 from bot.utils.get_dealer_prompt import get_dealer_prompt
+
 class Agent:
     def __init__(self, tools, model_service, model_name=None, stop=None):
         self.tools = tools
@@ -27,12 +26,19 @@ class Agent:
             "gpt-4o" if model_service == OpenAIModel else None
         )
         self.stop = stop
+        self.model_instance = self.model_service(
+            model=self.model_name,
+            system_prompt=agent_system_prompt_template.format(
+                tool_descriptions=self.prepare_tools(),
+                dealer_prompt=get_dealer_prompt()
+            ),
+            temperature=0
+        )
 
     def prepare_tools(self):
         toolbox = ToolBox()
         toolbox.store(self.tools)
         tool_descriptions = toolbox.tools()
-        # Enhance tool descriptions
         enhanced_descriptions = []
         for tool in tool_descriptions:
             if "get_dealers_info" in tool:
@@ -46,28 +52,16 @@ class Agent:
         return "\n".join(enhanced_descriptions)
 
     def think(self, prompt):
-        tool_descriptions = self.prepare_tools()
-        agent_system_prompt = agent_system_prompt_template.format(
-            tool_descriptions=tool_descriptions, 
-            dealer_prompt=get_dealer_prompt()
-        )
-
         thinking_prompt = f"""
         User query: {prompt}
 
-        Analyze this query carefully. If it relates to dealers or products or apppointement, you MUST use an appropriate tool.
-        For dealer information, use get_dealers_info. For product information, use get_products_info. , for making a appointement use make_appointement
+        Analyze this query carefully. If it relates to dealers or products or appointment, you MUST use an appropriate tool.
+        For dealer information, use get_dealers_info. For product information, use get_products_info. For making an appointment use make_appointment.
        
         Respond in the required JSON format with 'tool_choice' and 'tool_input'.
         """
 
-        model_instance = self.model_service(
-            model=self.model_name,
-            system_prompt=agent_system_prompt,
-            temperature=0
-        )
-
-        return model_instance.generate_text(thinking_prompt)
+        return self.model_instance.generate_text(thinking_prompt)
 
     def work(self, prompt):
         agent_response_dict = self.think(prompt)
@@ -80,30 +74,26 @@ class Agent:
         
         tool_response = None
         if tool_choice != "no tool":
-         for tool in self.tools:
-            if tool.__name__ == tool_choice:
-                if tool.__name__ == "make_appointment":
-                    # Call make_appointment without arguments
-                    tool_response = tool()
-                elif isinstance(tool_input, dict):
-                    if 'args' in tool_input:
-                        tool_response = tool(**tool_input['args'])
-                    elif 'kwargs' in tool_input:
-                        tool_response = tool(**tool_input['kwargs'])
+            for tool in self.tools:
+                if tool.__name__ == tool_choice:
+                    if tool.__name__ == "make_appointment":
+                        tool_response = tool()
+                    elif isinstance(tool_input, dict):
+                        if 'args' in tool_input:
+                            tool_response = tool(**tool_input['args'])
+                        elif 'kwargs' in tool_input:
+                            tool_response = tool(**tool_input['kwargs'])
+                        else:
+                            tool_response = tool(**tool_input)
                     else:
-                        tool_response = tool(**tool_input)
-                else:
-                    tool_response = tool(tool_input)
-                break
+                        tool_response = tool(tool_input)
+                    break
 
         if tool_response:
             print(f"Debug - Tool response: {tool_response}")
             return self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
         else:
             return agent_response_dict.get('tool_input', "I'm sorry, I couldn't process that request.")
-
-        complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
-        return complete_answer
 
     def generate_complete_answer(self, original_prompt, tool_choice, tool_input, tool_response):
         completion_prompt = f"""
@@ -117,13 +107,7 @@ class Agent:
         If no tool was used, provide a direct response to the query.
         """
 
-        model_instance = self.model_service(
-            model=self.model_name,
-            system_prompt="You are a helpful assistant providing complete answers based on tool responses.",
-            temperature=0
-        )
-
-        complete_answer = model_instance.generate_text(completion_prompt)
+        complete_answer = self.model_instance.generate_text(completion_prompt)
         if isinstance(complete_answer, dict):
             return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
         return complete_answer
@@ -139,11 +123,10 @@ class Agent:
             print(colored(f"Agent: {answer}", 'yellow'))
 
 if __name__ == "__main__":
-    tools = [get_products_info, get_dealers_info,make_appointment]
+    tools = [get_products_info, get_dealers_info, make_appointment]
     model_service = OpenAIModel
     model_name = 'gpt-4o'
     stop = None
 
     agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
     agent.run()
-
