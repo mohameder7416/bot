@@ -8,6 +8,7 @@ import os
 import json
 from bot.utils.load_variables import load_variables
 from bot.utils.db import DataBase
+from bot.utils.logging import create_pwa_log
 def get_dealers_info(sql_query: str):
     """
     Execute an SQL query on the dealers_df DataFrame, a table for dealers informations that offers buying services. 
@@ -68,6 +69,7 @@ offer_finance: Indicates whether the dealership provides financing options for c
         
         
     except Exception as e:
-        print(f"Error executing query: {str(e)}")
+        error_message = f"Error executing query: {str(e)}"
+        create_pwa_log(error_message)
         return None
 

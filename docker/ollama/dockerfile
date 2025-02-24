@@ -1,4 +1,4 @@
-FROM ollama/ollama:0.5.9
+FROM ollama/ollama:latest
 
 # Start Ollama, pull the model, then stop Ollama
 RUN ollama serve & sleep 2 && ollama pull phi4 
