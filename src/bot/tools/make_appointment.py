@@ -15,8 +15,8 @@ PWA_API_CRM=os.getenv("PWA_API_CRM")
 print("PWA_API_CRM",PWA_API_CRM)
 
 variables=load_variables()
-lead_crm_id=variables["lead_crm_id"]
-print("lead_crm_id", lead_crm_id)
+lead_id_crm=variables["lead_crm_id"]
+
 
 
 
@@ -36,7 +36,7 @@ def make_appointment():
     """
     url = f"{PWA_API_CRM}/appointment/link"
     payload = json.dumps({
-    "lead_id": int(lead_crm_id),
+    "lead_id": int(lead_id_crm),
     "source": "AI Bot"
     })
 
@@ -45,7 +45,6 @@ def make_appointment():
     #     "Content-Type": "application/json",
     # }
     headers=create_token()
-    print("headers", headers)
     response = requests.request("GET", url, headers=headers, data=payload)
     return response.json()['result']
 

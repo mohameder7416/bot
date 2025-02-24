@@ -8,15 +8,22 @@ from datetime import timezone
 
 
 def create_token():
-    module_name = 'bot'
-    now = dt.datetime.now(timezone.utc)
+    module_name='bot'
     payload = {
-        "iss": module_name,
-        "iat": now,
-        "exp": now + dt.timedelta(minutes=60*2),
-        "nbf": now,
-        "jti": module_name,
-        "sub": module_name
+        "iss": module_name,  # Issuer
+        "iat": dt.datetime.utcnow(),  # Issued At
+        "exp": dt.datetime.utcnow() + dt.timedelta(minutes=2),  # Expiration
+        "nbf": dt.datetime.utcnow(),  # Not Before
+        "jti": module_name,  # JWT ID
+        "sub": module_name  # Subject
     }
+
+    # Encode the JWT
     token = jwt.encode(payload, secret_key, algorithm="HS256")
-    return token
+
+    # Set up headers with the JWT token
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    return headers

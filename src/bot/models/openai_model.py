@@ -7,7 +7,11 @@ from langchain_community.callbacks.manager import get_openai_callback
 from dotenv import load_dotenv
 import re
 load_dotenv()
+# Must precede any llm module imports
 
+from langtrace_python_sdk import langtrace
+
+langtrace.init()
 class OpenAIModel:
     def __init__(self, model="gpt-4o", system_prompt=None, temperature=0.7):
         self.temperature = temperature
