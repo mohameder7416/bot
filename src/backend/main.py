@@ -17,7 +17,7 @@ from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
 from bot.variables.variables import variables, load_variables, save_variables
-
+from bot.utils
 
 # Load environment variables
 load_dotenv()
