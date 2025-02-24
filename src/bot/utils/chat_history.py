@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def save_conversation(db, lead_id, prompt, result):
     conn = db.connexion()
     if conn:

@@ -19,6 +19,13 @@ import re
 import json
 from termcolor import colored
 from bot.utils.get_dealer_prompt import get_dealer_prompt
+from bot.utils.chat_history import load_chat_history
+from bot.utils.db import DataBase
+from bot.utils.load_variables import load_variables
+db = DataBase()
+
+variables=load_variables()
+lead_id=variables["lead_id"]
 class Agent:
     def __init__(self, tools, model_service, model_name=None, stop=None):
         self.tools = tools
@@ -49,7 +56,8 @@ class Agent:
         tool_descriptions = self.prepare_tools()
         agent_system_prompt = agent_system_prompt_template.format(
             tool_descriptions=tool_descriptions, 
-            dealer_prompt=get_dealer_prompt()
+            dealer_prompt=get_dealer_prompt(),
+            chat_history=load_chat_history(db,lead_id)
         )
 
         thinking_prompt = f"""
@@ -102,8 +110,7 @@ class Agent:
         else:
             return agent_response_dict.get('tool_input', "I'm sorry, I couldn't process that request.")
 
-        complete_answer = self.generate_complete_answer(prompt, tool_choice, tool_input, tool_response)
-        return complete_answer
+      
 
     def generate_complete_answer(self, original_prompt, tool_choice, tool_input, tool_response):
         completion_prompt = f"""
@@ -116,7 +123,7 @@ class Agent:
         Make sure to incorporate the tool's response into your answer if a tool was used.
         If no tool was used, provide a direct response to the query.
         """
-
+        print("complete_prompt", completion_prompt)
         model_instance = self.model_service(
             model=self.model_name,
             system_prompt="You are a helpful assistant providing complete answers based on tool responses.",

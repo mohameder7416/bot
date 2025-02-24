@@ -23,5 +23,11 @@ Here is a list of your tools along with their descriptions:
 
 Please make a decision based on the provided user query and the available tools,
 
+
+he is a list of Chat History:
+{chat_history}
+
+
+
 """
 
