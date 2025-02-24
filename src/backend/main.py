@@ -17,8 +17,9 @@ from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
 from bot.variables.variables import variables, load_variables, save_variables
-from bot.utils
-
+from bot.utils.chat_history import save_conversation
+from bot.utils.db import DataBase
+db=DataBase()
 # Load environment variables
 load_dotenv()
 
@@ -75,6 +76,7 @@ async def run_agent(request: AgentRequest):
         
         # Execute the agent's work
         result = agent.work(request.prompt)
+        save_conversation(db,variables.lead_id,request.prompt,result)
         
         return {
             "result": result,
