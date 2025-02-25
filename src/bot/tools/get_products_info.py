@@ -8,43 +8,42 @@ import json
 from dotenv import load_dotenv
 from bot.utils.create_token import create_token
 from bot.variables.variables import load_variables
+import redis
 load_dotenv()
 secret_key = os.getenv("secret_key")
+REDIS_HOST=os.getenv("REDIS_HOST")
+REDIS_PORT=os.getenv("REDIS_PORT")
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
+
+def get_stored_arguments(lead_id):
+        """Load stored arguments for a specific lead from Redis."""
+        stored_args = redis_client.get(f"lead_arguments:{lead_id}")
+        return json.loads(stored_args) if stored_args else {}
 
 
-def get_stored_arguments():
-    """Load all stored arguments from the single JSON file."""
-    file_path = "lead_arguments.json"
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    return {}
+
+
+
+
+
+
+
+
+
 
 
 def save_arguments(lead_id, new_arguments):
     """
-    Save arguments for a specific lead ID to the single JSON file.
+    Save arguments for a specific lead ID to Redis.
     Updates existing arguments instead of overwriting them.
     """
-    file_path = "lead_arguments.json"
-    
-    # Load existing data
-    all_arguments = get_stored_arguments()
-    
-    # Get existing arguments for this lead (or empty dict if none exist)
-    existing_args = all_arguments.get(str(lead_id), {})
-    
-    # Update existing arguments with new ones
+    existing_args = get_stored_arguments(lead_id)
     existing_args.update(new_arguments)
+    redis_client.set(f"lead_arguments:{lead_id}", json.dumps(existing_args))
+    key = f"lead_arguments:{lead_id}"
+    print(f"Filters saved for lead {lead_id}: {existing_args}")
     
-    # Save updated arguments for this lead
-    all_arguments[str(lead_id)] = existing_args
-    
-    # Save all arguments back to file
-    with open(file_path, 'w') as f:
-        json.dump(all_arguments, f, indent=2)
-
-
+    return key  # Return the key used to store the filters
 def get_products_info(*args, **kwargs):
     """
     Get products information from the API with optional filters.
@@ -70,25 +69,46 @@ def get_products_info(*args, **kwargs):
     """
     variables = load_variables()
     lead_id = variables["lead_id"]
-    dealer_id=variables["dealer_id"]
+    dealer_id = variables["dealer_id"]
+    product_id= variables["product_id"]
     if not lead_id:
         raise ValueError("lead_id not found in variables")
 
-    # Load all arguments and get specific lead's arguments
-    all_arguments = get_stored_arguments()
-    filters = all_arguments.get(str(lead_id), {})  # Get stored filters for this lead
+    # Load filters for this lead from Redis
+    filters = get_stored_arguments(lead_id)
     
     # Update with new arguments if provided
     if args and isinstance(args[0], dict):
         filters.update(args[0])
     filters.update(kwargs)
     
-    # Save updated arguments
+    # Save updated arguments to Redis
     save_arguments(lead_id, filters)
 
     api_url = os.getenv("base_url_products_invontaire")
     headers = create_token()
+    product_data = {
+        "user_id": dealer_id,
+        "product_id": product_id,
+        "fields": ["make"]
+    }
 
+    try:
+        product_response = requests.get(api_url, json=product_data, headers=headers)
+        product_response.raise_for_status()
+        product_details = product_response.json().get("data", [])
+        
+        if not product_details:
+            return {"error": "Product not found"}
+        
+        product_make = product_details[0].get("make")
+    except requests.RequestException as e:
+        return {"error": f"Failed to fetch product details. Error: {str(e)}"}
+
+    # Compare the make from the API with the make from the arguments
+    if 'make' in filters and product_make != filters['make']:
+        # If they don't match, don't include product_id in the main query
+        product_id = None
     # Build API filters using ALL stored filters
     api_filters = []
     filter_mapping = {
@@ -106,7 +126,7 @@ def get_products_info(*args, **kwargs):
 
     # Debug print to see what filters we're working with
     print(f"Debug - Current filters: {filters}")
-
+    make_filter = filters.get('make')
     # Process ALL filters from storage
     for key, value in filters.items():
         if key in filter_mapping:
@@ -123,6 +143,8 @@ def get_products_info(*args, **kwargs):
             "condition", "title", "is_added", "price_type"
         ]
     }
+    if product_id:
+        data["product_id"] = product_id
 
     print(f"Debug - API request data: {data}")
 
