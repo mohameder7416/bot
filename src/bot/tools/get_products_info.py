@@ -87,11 +87,7 @@ def get_products_info(*args, **kwargs):
     save_arguments(lead_id, filters)
 
     api_url = os.getenv("base_url_products_invontaire")
-    token = create_token()
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
+    headers = create_token()
 
     # Build API filters using ALL stored filters
     api_filters = []

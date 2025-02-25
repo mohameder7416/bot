@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import json
 
 # FastAPI endpoint
 API_URL = "http://0.0.0.0:8000/agent"
@@ -30,10 +31,10 @@ with sidebar:
     else:  # ollama
         model_name = st.selectbox("Model Name", ["deepseek-r1", "llama3.3", "phi4"], key="model_name")
     
-    dealers_id = st.number_input("Dealers ID", min_value=1, value=1, step=1, key="dealers_id")
+    dealers_id = st.number_input("Dealers ID", min_value=1, value=102262, step=1, key="dealers_id")
     lead_id = st.number_input("Lead ID", min_value=1, value=1, step=1, key="lead_id")
-    lead_crm_id = st.number_input("Lead CRM ID", min_value=1, value=1, step=1, key="lead_crm_id")
-    product_id = st.number_input("Product ID", min_value=1, value=1, step=1, key="product_id")
+    lead_crm_id = st.number_input("Lead CRM ID", min_value=1, value=54321, step=1, key="lead_crm_id")
+    product_id = st.number_input("Product ID", min_value=1, value=12, step=1, key="product_id")
 
 # Main content
 with main_content:
@@ -67,7 +68,7 @@ with main_content:
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Prepare the payload for the API request
+        # Prepare the payload for the API request - match exactly what worked in Postman
         payload = {
             "prompt": prompt,
             "model_service": st.session_state.model_service,
@@ -78,20 +79,39 @@ with main_content:
             "product_id": st.session_state.product_id
         }
 
+        # Add debug output of what we're sending
+        with st.expander("Debug: Request Payload"):
+            st.json(payload)
+
         try:
             # Make a request to the FastAPI backend
             response = requests.post(API_URL, json=payload)
-            response.raise_for_status()  # Raise an exception for bad status codes
             
-            # Parse the JSON response
-            response_data = response.json()
+            # Display status code for debugging
+            st.sidebar.write(f"Status code: {response.status_code}")
+            
+            # Try to parse JSON even if status code indicates error
+            try:
+                response_data = response.json()
+                st.sidebar.write("Response parsed successfully")
+            except ValueError:
+                response_data = {"error": "Could not parse JSON response", "raw": response.text}
+                st.sidebar.write("Failed to parse response")
             
             # Extract 'result' from the response if it exists
-            assistant_response = response_data.get('result', 'No result found.')
+            assistant_response = response_data.get('result', 'No result found in response.')
+            
+            # If no result, provide the full response for debugging
+            if 'result' not in response_data:
+                st.sidebar.write("No 'result' field found in response")
+                assistant_response += f"\n\nDebug info: {json.dumps(response_data, indent=2)}"
+            
         except requests.exceptions.RequestException as e:
             assistant_response = f"Error: Unable to reach the server. Details: {str(e)}"
-        except ValueError as e:
-            assistant_response = f"Error: Invalid response from server. Details: {str(e)}"
+            st.sidebar.write(f"Request exception: {e}")
+        except Exception as e:
+            assistant_response = f"Error: Something went wrong. Details: {str(e)}"
+            st.sidebar.write(f"General exception: {e}")
 
         # Display assistant response in chat message container
         with chat_container:
@@ -100,9 +120,12 @@ with main_content:
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
-        # Optionally, display raw API response for debugging
+        # Always display raw API response for debugging
         with st.expander("Debug: Raw API Response"):
-            st.write(response.text if 'response' in locals() else "No response received")
-
-    # Force a rerun to update the chat container after new messages
-  
+            if 'response' in locals():
+                st.write(f"Status code: {response.status_code}")
+                st.text(response.text)
+                st.write("Headers:")
+                st.json(dict(response.headers))
+            else:
+                st.write("No response received")
