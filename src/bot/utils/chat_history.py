@@ -29,6 +29,7 @@ def load_chat_history(db, lead_id):
             FROM conversations
             WHERE lead_id = %s
             ORDER BY timestamp ASC
+            LIMIT 10
             """
             data = (lead_id,)
             rows = db.readQuery(conn, query, data)
