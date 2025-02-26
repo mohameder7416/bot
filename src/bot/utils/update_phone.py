@@ -9,7 +9,10 @@ lead_id=variables["lead_id"]
 dealer_id=variables["dealer_id"]
 crm_new_lead_id=variables["lead_crm_id"]
 PWA_CRM_API_URL=os.getenv("PWA_CRM_API_URL")
-
+PWA_DB_HOST_V12CHAT_WRITE=os.getenv("PWA_DB_HOST_V12CHAT_WRITE=")
+PWA_DB_USERNAME_V12CHAT_WRITE=os.getenv("PWA_DB_USERNAME_V12CHAT_WRITE")
+PWA_DB_PASSWORD_V12CHAT_WRITE=os.getenv("PWA_DB_PASSWORD_V12CHAT_WRITE")
+PWA_DB_DATABASE_V12CHAT_WRITE=os.getenv("PWA_DB_DATABASE_V12CHAT_WRITE")
 
 def update_CRM_phone(dealer_id, lead_crm_id, phone):
 
