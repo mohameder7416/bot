@@ -147,8 +147,8 @@ class Agent:
 
 if __name__ == "__main__":
     tools = [get_products_info, get_dealers_info,make_appointment]
-    model_service = OpenAIModel
-    model_name = 'gpt-4o'
+    model_service = OllamaModel
+    model_name = 'phi4'
     stop = None
 
     agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
