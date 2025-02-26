@@ -21,10 +21,6 @@ def update_CRM_phone(dealer_id, lead_crm_id, phone):
     return r.status_code
 
 
-
-
-
-
 def update_Chat_Phone(message, lead_id,DB):
     query = "Update leads SET phone_number= %s WHERE id = %s"
     data = (message, lead_id)
