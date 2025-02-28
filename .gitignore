@@ -23,7 +23,7 @@ __pycache__/
 test/
 frontend/
 docker/langtrace/
-dokcer/ollama/
+dokcker/ollama/
 
 
 

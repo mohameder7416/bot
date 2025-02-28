@@ -135,21 +135,3 @@ class Agent:
             return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
         return complete_answer
 
-    def run(self):
-        print(colored("Welcome to the Agent! Type 'exit' to quit.", 'green'))
-        while True:
-            prompt = input(colored("Ask me anything: ", 'cyan'))
-            if prompt.lower() == "exit":
-                break
-            
-            answer = self.work(prompt)
-            print(colored(f"Agent: {answer}", 'yellow'))
-
-if __name__ == "__main__":
-    tools = [get_products_info, get_dealers_info,make_appointment]
-    model_service = OllamaModel
-    model_name = 'phi4'
-    stop = None
-
-    agent = Agent(tools=tools, model_service=model_service, model_name=model_name, stop=stop)
-    agent.run()

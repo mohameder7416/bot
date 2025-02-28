@@ -5,7 +5,7 @@ services:
       dockerfile: ./docker/Dockerfile
     container_name: Bot
     volumes:
-      - ../src:/usr/share/nginx/html:rw
+      - ../src:/var/www/html:rw
     ports:
       - "8080:8080"
     env_file:
