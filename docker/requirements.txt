@@ -16,3 +16,4 @@ PyMySQL==1.1.1
 redis
 langtrace-python-sdk
 langchain_ollama
+uvicorn
