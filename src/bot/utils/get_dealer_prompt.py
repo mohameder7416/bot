@@ -15,5 +15,3 @@ def get_dealer_prompt():
 
 
 
-if __name__=="main":
-    print(get_dealer_prompt())

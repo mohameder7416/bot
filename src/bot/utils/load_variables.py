@@ -14,8 +14,3 @@ def load_variables():
 
 
 
-
-if __name__ == "__main__":
-    variables = load_variables()
-    dealer_id = variables["dealer_id"]
-    print(dealer_id)
