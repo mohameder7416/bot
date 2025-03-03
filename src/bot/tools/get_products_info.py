@@ -13,7 +13,7 @@ load_dotenv()
 secret_key = os.getenv("secret_key")
 REDIS_HOST=os.getenv("REDIS_HOST")
 REDIS_PORT=os.getenv("REDIS_PORT")
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=True)
+redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=12, decode_responses=True)
 
 def get_stored_arguments(lead_id):
         """Load stored arguments for a specific lead from Redis."""

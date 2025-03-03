@@ -1,55 +1,53 @@
-from bot.utils.db import DataBase
-
-DB=DataBase()
 import os
-import time
+import pymysql
+from db import DataBase
+from dotenv import load_dotenv
+load_dotenv()
+db = DataBase(
+    host=os.getenv("DB_HOST_WRITE"),
+    user=os.getenv("DB_USER_WRITE"),
+    password=os.getenv("DB_PASSWORD_WRITE"),
+    database=os.getenv("DB_NAME_WRITE"),
+    port=int(os.getenv("DB_PORT_WRITE", 3306)),
+)
 
 def get_executed_versions(connection):
+    """Fetch the list of already executed versions from the migrations table."""
     try:
-        """Fetch the list of already executed versions from the migrations table."""
         with connection.cursor() as cursor:
             cursor.execute("SELECT version FROM migrations")
             return {row[0] for row in cursor.fetchall()}
-    except:
-        return {}
+    except pymysql.MySQLError:
+        return set()
 
 def execute_sql_file(file_path, connection):
     """Execute the SQL script from the given file path."""
     with open(file_path, 'r') as file:
         sql_script = file.read()
     
-    # Split the script into individual statements
-    sql_statements = sql_script.split(';')
+    sql_statements = [stmt.strip() for stmt in sql_script.split(';') if stmt.strip()]
     
     with connection.cursor() as cursor:
         for statement in sql_statements:
-            if statement.strip():  # Ignore empty statements
-                cursor.execute(statement)
+            cursor.execute(statement)
         connection.commit()
 
 def main():
-    # Database connection details
-    connection = DB.connexion(
-    DB_HOST_ASSISTANCE_WRITE ,
-    DB_USERNAME_ASSISTANCE_WRITE , 
-    DB_PASSWORD_ASSISTANCE_WRITE ,
-    DB_DATABASE_ASSISTANCE_WRITE 
-        )
+    connection = db.connexion()
+    if not connection:
+        print("Failed to connect to the database.")
+        return
 
-    # Path to the migrations folder
     migrations_folder = 'migrations'
+    os.makedirs(migrations_folder, exist_ok=True)
 
     try:
-        # Fetch existing versions
         executed_versions = get_executed_versions(connection)
 
-        # Iterate over files in the migrations folder
-        for file_name in os.listdir(migrations_folder):
+        for file_name in sorted(os.listdir(migrations_folder)):
             if file_name.endswith('.sql'):
-                version = file_name.replace('.sql', '')  # Extract version from file name
-                version=version.replace("_",".")
+                version = file_name.replace('.sql', '').replace("_", ".")
                 if version not in executed_versions:
-                    # Execute the SQL file and insert the version into the migrations table
                     file_path = os.path.join(migrations_folder, file_name)
                     execute_sql_file(file_path, connection)
                     with connection.cursor() as cursor:
@@ -63,3 +61,5 @@ def main():
     finally:
         connection.close()
 
+if __name__ == "__main__":
+    main()

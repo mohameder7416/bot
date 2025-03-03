@@ -23,7 +23,7 @@ DB_HOST_WRITE = os.getenv("DB_HOST_WRITE")
 DB_PORT_WRITE = os.getenv("DB_PORT_WRITE")
 DB_NAME_WRITE = os.getenv("DB_NAME_WRITE")
 
-db = DataBase(host=DB_HOST_WRITE,user=DB_USER_WRITE,password=DB_PASSWORD_WRITE,database=DB_NAME_WRITE,port=DB_PORT_WRITE)
+db = DataBase(host=DB_HOST_WRITE,user=DB_USER_WRITE,password=DB_PASSWORD_WRITE,database=DB_NAME_WRITE,port=3306)
 
 
 

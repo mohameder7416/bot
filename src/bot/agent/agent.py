@@ -11,12 +11,10 @@ from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
 from bot.toolbox.toolbox import ToolBox
-from termcolor import colored
 import json
 import re 
 import json
 import os
-from termcolor import colored
 from bot.utils.get_dealer_prompt import get_dealer_prompt
 from bot.utils.chat_history import load_chat_history
 from bot.utils.db import DataBase
@@ -26,7 +24,7 @@ DB_PASSWORD_READ = os.getenv("DB_PASSWORD_READ")
 DB_HOST_READ = os.getenv("DB_HOST_READ")
 DB_PORT_READ = os.getenv("DB_PORT_READ")
 DB_NAME_READ = os.getenv("DB_NAME_READ")
-db = DataBase(host=DB_HOST_READ,user=DB_USER_READ,password=DB_PASSWORD_READ,database=DB_NAME_READ,port=DB_PORT_READ)
+db = DataBase(host=DB_HOST_READ,user=DB_USER_READ,password=DB_PASSWORD_READ,database=DB_NAME_READ,port=3306)
 
 
 
@@ -141,4 +139,4 @@ class Agent:
         if isinstance(complete_answer, dict):
             return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
         return complete_answer
-
+   

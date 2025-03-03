@@ -2,22 +2,8 @@ import pymysql
 from pymysql import Error
 from datetime import datetime
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-DB_USER_WRITE= os.getenv("DB_USER_WRITE")
-DB_PASSWORD_WRITE = os.getenv("DB_PASSWORD_WRITE")
-DB_HOST_WRITE = os.getenv("DB_HOST_WRITE")
-DB_PORT_WRITE = int(os.getenv("DB_PORT_WRITE", "3306"))  # Default MySQL port is 3306
-DB_NAME_WRITE = os.getenv("DB_NAME_WRITE")
 
 
-DB_USER_READ= os.getenv("DB_USER_READ")
-DB_PASSWORD_READ = os.getenv("DB_PASSWORD_WRITE")
-DB_HOST_READ = os.getenv("DB_HOST_WRITE")
-DB_PORT_READ = int(os.getenv("DB_PORT_WRITE", "3306"))  # Default MySQL port is 3306
-DB_NAME_READ = os.getenv("DB_NAME_WRITE")
 
 
 
@@ -25,15 +11,27 @@ DB_NAME_READ = os.getenv("DB_NAME_WRITE")
 
 
 class DataBase:
+    def __init__(self, host, user, password, database, port):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
+        self.port = port
+          # Establish connection upon initialization
+
+    
+    
+    
+    
     # Connection to any MySQL database using HOST, USER, PASSWORD, NAME
-    def connexion(self, host, user, password, database, port):
+    def connexion(self):
         try:
             conn = pymysql.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database,
-                port=port
+                host=self.host,
+                user=self.user,
+                password=self.password,
+                database=self.database,
+                port=self.port
             )
             return conn
         except Error as e:

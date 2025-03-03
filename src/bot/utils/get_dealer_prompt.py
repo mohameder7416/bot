@@ -1,10 +1,23 @@
 from bot.utils.load_variables import load_variables
 from bot.utils.db import DataBase
-DB_USER_READ="bot_v2_writer"
-DB_PASSWORD_READ="SwnvBYkjpfoYTIz"
-DB_HOST_READ="preproduction-db-1-instance-1.c7nkisio0atn.us-west-2.rds.amazonaws.com"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
+
+
+
+
+
+
+
+DB_USER_READ=os.getenv("DB_USER_READ")
+DB_PASSWORD_READ=os.getenv("DB_PASSWORD_READ")
+DB_HOST_READ=os.getenv("DB_HOST_READ")
 DB_PORT_READ=3306
-DB_NAME_READ="bot_v2"
+DB_NAME_READ=os.getenv("DB_NAME_READ")
 db = DataBase(host=DB_HOST_READ,user=DB_USER_READ,password=DB_PASSWORD_READ,database=DB_NAME_READ,port=DB_PORT_READ)
 conn=db.connexion()
 def get_dealer_prompt():
