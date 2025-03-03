@@ -1,7 +1,5 @@
 from bot.utils.db import DataBase
 
-
-
 DB=DataBase()
 import os
 import time

@@ -6,15 +6,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = int(os.getenv("DB_PORT", "3306"))  # Default MySQL port is 3306
-DB_NAME = os.getenv("DB_NAME")
+DB_USER_WRITE= os.getenv("DB_USER_WRITE")
+DB_PASSWORD_WRITE = os.getenv("DB_PASSWORD_WRITE")
+DB_HOST_WRITE = os.getenv("DB_HOST_WRITE")
+DB_PORT_WRITE = int(os.getenv("DB_PORT_WRITE", "3306"))  # Default MySQL port is 3306
+DB_NAME_WRITE = os.getenv("DB_NAME_WRITE")
+
+
+DB_USER_READ= os.getenv("DB_USER_READ")
+DB_PASSWORD_READ = os.getenv("DB_PASSWORD_WRITE")
+DB_HOST_READ = os.getenv("DB_HOST_WRITE")
+DB_PORT_READ = int(os.getenv("DB_PORT_WRITE", "3306"))  # Default MySQL port is 3306
+DB_NAME_READ = os.getenv("DB_NAME_WRITE")
+
+
+
+
+
 
 class DataBase:
     # Connection to any MySQL database using HOST, USER, PASSWORD, NAME
-    def connexion(self, host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME, port=DB_PORT):
+    def connexion(self, host, user, password, database, port):
         try:
             conn = pymysql.connect(
                 host=host,

@@ -6,9 +6,7 @@ project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
 from bot.prompts.prompts import agent_system_prompt_template
-from bot.models.groq_model import GroqModel
 from bot.models.openai_model import OpenAIModel
-from bot.models.ollama_model import OllamaModel
 from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
@@ -17,12 +15,21 @@ from termcolor import colored
 import json
 import re 
 import json
+import os
 from termcolor import colored
 from bot.utils.get_dealer_prompt import get_dealer_prompt
 from bot.utils.chat_history import load_chat_history
 from bot.utils.db import DataBase
 from bot.utils.load_variables import load_variables
-db = DataBase()
+DB_USER_READ= os.getenv("DB_USER_READ")
+DB_PASSWORD_READ = os.getenv("DB_PASSWORD_READ")
+DB_HOST_READ = os.getenv("DB_HOST_READ")
+DB_PORT_READ = os.getenv("DB_PORT_READ")
+DB_NAME_READ = os.getenv("DB_NAME_READ")
+db = DataBase(host=DB_HOST_READ,user=DB_USER_READ,password=DB_PASSWORD_READ,database=DB_NAME_READ,port=DB_PORT_READ)
+
+
+
 
 variables=load_variables()
 lead_id=variables["lead_id"]

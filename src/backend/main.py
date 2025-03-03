@@ -10,16 +10,24 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from bot.agent.agent import Agent
-from bot.models.groq_model import GroqModel
 from bot.models.openai_model import OpenAIModel
-from bot.models.ollama_model import OllamaModel
 from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
 from bot.variables.variables import variables, load_variables, save_variables
 from bot.utils.chat_history import save_conversation
 from bot.utils.db import DataBase
-db=DataBase()
+DB_USER_WRITE= os.getenv("DB_USER_WRITE")
+DB_PASSWORD_WRITE = os.getenv("DB_PASSWORD_WRITE")
+DB_HOST_WRITE = os.getenv("DB_HOST_WRITE")
+DB_PORT_WRITE = os.getenv("DB_PORT_WRITE")
+DB_NAME_WRITE = os.getenv("DB_NAME_WRITE")
+
+db = DataBase(host=DB_HOST_WRITE,user=DB_USER_WRITE,password=DB_PASSWORD_WRITE,database=DB_NAME_WRITE,port=DB_PORT_WRITE)
+
+
+
+
 # Load environment variables
 load_dotenv()
 
@@ -39,9 +47,7 @@ async def run_agent(request: AgentRequest):
     tools = [get_dealers_info, get_products_info,make_appointment]
     
     model_service_map = {
-        "openai": OpenAIModel,
-        "groq": GroqModel,
-        "ollama": OllamaModel
+        "openai": OpenAIModel
     }
     
     if request.model_service not in model_service_map:

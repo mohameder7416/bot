@@ -21,17 +21,6 @@ def get_stored_arguments(lead_id):
         return json.loads(stored_args) if stored_args else {}
 
 
-
-
-
-
-
-
-
-
-
-
-
 def save_arguments(lead_id, new_arguments):
     """
     Save arguments for a specific lead ID to Redis.
