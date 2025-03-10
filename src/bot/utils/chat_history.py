@@ -1,7 +1,7 @@
 from datetime import datetime
 from bot.utils.load_variables import load_variables
 variables = load_variables()
-lead_id = variables["lead_id)"]
+lead_id = variables["lead_id"]
 
 
 def load_chat_history(DB, lead_id=lead_id):
