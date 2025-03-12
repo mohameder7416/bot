@@ -18,7 +18,7 @@ from bot.utils.get_dealer_prompt import get_dealer_prompt
 from bot.utils.chat_history import load_chat_history
 from bot.utils.db import DataBase
 from bot.utils.load_variables import load_variables
-
+from termcolor import colored
 # Environment variables
 PWA_DB_HOST_V12CHAT_READ = os.getenv("PWA_DB_HOST_V12CHAT_READ")
 PWA_DB_USERNAME_V12CHAT_READ = os.getenv("PWA_DB_USERNAME_V12CHAT_READ")
@@ -285,3 +285,26 @@ class Agent:
         if isinstance(complete_answer, dict):
             return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
         return complete_answer
+    
+    
+    def run(self):
+        print(colored("Welcome to the Agent! Type 'exit' to quit.", 'green'))
+        while True:
+            prompt = input(colored("Ask me anything: ", 'cyan'))
+            if prompt.lower() == "exit":
+                break
+            
+            answer = self.work(prompt)
+            print(colored(f"Agent: {answer}", 'yellow'))
+            
+            
+            
+
+if __name__ == "__main__":
+    tools = [get_products_info, get_dealers_info,make_appointment]
+    model_service = OpenAIModel
+    model_name = 'gpt-3.5-turbo'
+    stop = None
+
+    agent = Agent(tools=tools, model_service=model_service, stop=stop)
+    agent.run()            
