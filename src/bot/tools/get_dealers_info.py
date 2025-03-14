@@ -15,25 +15,6 @@ def get_dealers_info(sql_query: str):
     offers_test_drive, welcome_message, shipping, trade_ins, opening_hours offer_finance)
     dealer_name: The name of the dealership. It is typically the brand or business name that customers associate with the dealership, such as "XYZ Motors."
 
-address: The physical location of the dealership. This includes the street address, city, state, and zip code. It helps customers find the dealership.
-
-phone: The contact number of the dealership, allowing customers to call for inquiries, appointments, or other services.
-
-credit_app_link: A link to the dealership's online credit application form. This allows customers to apply for financing or credit pre-approval for vehicle purchases.
-
-inventory_link: A link to the dealership's inventory page, where customers can view available vehicles, their specifications, prices, and other relevant details.
-
-offers_test_drive: Indicates whether the dealership offers test drives for customers interested in trying out a vehicle before making a purchase.
-
-welcome_message: A greeting or introductory message displayed on the dealership’s website or sent to customers when they interact with the dealership. It could be something like, "Welcome to XYZ Motors, where we find the perfect vehicle for you!"
-
-shipping: Information regarding shipping options available for purchasing vehicles. This could include delivery to a customer’s home or specific areas, and details on shipping fees and timelines.
-
-trade_ins: Describes whether the dealership accepts trade-in vehicles from customers. If so, it might include information on how the trade-in process works, such as valuation or appraisal details.
-
-opening_hours: The hours during which the dealership is open to the public. This typically includes specific opening and closing times for each day of the week.
-
-offer_finance: Indicates whether the dealership provides financing options for customers. It could include details about loan terms, interest rates, and how customers can apply for financing.
     Parameters:
         sql_query (str or dict): An SQL query string or a dictionary with key "sql_query".
 
