@@ -1,21 +1,17 @@
 FROM python:3.12-slim
 
+# Create all required directories first
+RUN mkdir -p /var/log/bot /var/www/html /opt/dependencies/.venv /var/www/html/bot/variables /usr/share/nginx/
 
-RUN mkdir -p /var/log/bot
-RUN mkdir -p /var/www/html
-RUN mkdir -p /opt/dependencies/.venv
-
-RUN chown -R www-data:www-data /var/www/html
-RUN chown -R www-data:www-data /opt/dependencies/
-RUN chown -R www-data:www-data /var/log/bot
-
-RUN mkdir -p /usr/share/nginx/
+# Create symbolic link
 RUN ln -s /var/www/html /usr/share/nginx/html
 
+# Set very permissive permissions (for debugging purposes)
+RUN chmod -R 777 /var/www/html /opt/dependencies/ /var/log/bot
+
 WORKDIR /opt/dependencies/.venv
-# RUN mkdir /var/log/bot
-USER www-data
-# Create a virtual environment in /opt/dependencies
+
+# Create a virtual environment
 RUN python -m venv /opt/dependencies/.venv
 
 ENV PATH="/opt/dependencies/.venv/bin:$PATH"
@@ -23,18 +19,12 @@ COPY docker/requirements.txt /opt/dependencies/requirements.txt
 
 RUN /opt/dependencies/.venv/bin/pip install --no-cache-dir -r /opt/dependencies/requirements.txt
 
-# Copy the source code into /app/html
-
+# Copy the source code
 WORKDIR /var/www/html
-
 COPY src .
 
-USER root
-RUN chown -R www-data:www-data /var/www/html
-
-USER www-data
 
 EXPOSE 8080
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,0 +1,12 @@
+services:
+  fastapi-app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    container_name: Bot
+    volumes:
+      - ../src:/var/www/html:rw
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../src/.env

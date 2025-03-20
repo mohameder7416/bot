@@ -20,3 +20,12 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+test/
+frontend/
+docker/ollama/
+docker/langtrace/
+docker/redis/
+src/__ppd.env/
+src/__prd.env/
+
+
