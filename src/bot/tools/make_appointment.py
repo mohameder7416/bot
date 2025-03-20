@@ -30,7 +30,7 @@ def make_appointment():
     
     
     Returns:
-        string: A link to book the appointement.
+        string: A link to book the appointement that have available time slots when the dealer is available.
     
     
     """

@@ -1,9 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends, Request, Query
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 import sys 
-import asyncio
 sys.path.append('..')
 import os
 from dotenv import load_dotenv
@@ -13,6 +11,11 @@ from bot.tools.get_dealers_info import get_dealers_info
 from bot.tools.get_products_info import get_products_info
 from bot.tools.make_appointment import make_appointment
 from bot.variables.variables import variables, load_variables, save_variables
+
+
+
+
+
 
 # Load environment variables
 load_dotenv()
@@ -27,11 +30,10 @@ class AgentRequest(BaseModel):
     lead_id: int
     lead_crm_id: int
     product_id: Optional[int] = None  # Make product_id optional
-    stream: Optional[bool] = True  # Add streaming option, default to True
 
 @app.post("/api/webhook-agent")
 async def run_agent(request: AgentRequest):
-    tools = [get_dealers_info, get_products_info, make_appointment]
+    tools = [get_dealers_info, get_products_info,make_appointment]
     
     model_service_map = {
         "openai": OpenAIModel
@@ -67,14 +69,15 @@ async def run_agent(request: AgentRequest):
         if request.product_id is not None:
             variables.product_id = request.product_id
         
-        # Check if streaming is requested
-        if request.stream:
-            # Execute the agent's work with streaming
-            return await agent.work_stream(request.prompt)
-        else:
-            # Execute the agent's work without streaming
-            result = await agent.work(request.prompt)
-            return JSONResponse(content={"result": result})
+        # Execute the agent's work
+        result = agent.work(request.prompt)
         
+        return {
+            "result": result,
+            "dealers_id": variables.dealer_id,
+            "lead_id": variables.lead_id,
+            "lead_crm_id": variables.lead_crm_id,
+            
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

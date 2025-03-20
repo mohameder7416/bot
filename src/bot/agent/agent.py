@@ -3,24 +3,21 @@ from pathlib import Path
 import json
 import os
 import re
-import asyncio
-from typing import AsyncGenerator, Dict, Any, List, Optional
-from queue import Queue
-import asyncio
 
 # Add the project root to the Python path
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(project_root))
 
 from bot.prompts.prompts import agent_system_prompt_template
-from bot.models.openai_model import OpenAIModel, QueueCallbackHandler
+from bot.models.openai_model import OpenAIModel
+from bot.tools.get_dealers_info import get_dealers_info
+from bot.tools.get_products_info import get_products_info
+from bot.tools.make_appointment import make_appointment
 from bot.toolbox.toolbox import ToolBox
 from bot.utils.get_dealer_prompt import get_dealer_prompt
 from bot.utils.chat_history import load_chat_history
 from bot.utils.db import DataBase
 from bot.utils.load_variables import load_variables
-from termcolor import colored
-from fastapi.responses import StreamingResponse
 
 # Environment variables
 PWA_DB_HOST_V12CHAT_READ = os.getenv("PWA_DB_HOST_V12CHAT_READ")
@@ -65,9 +62,9 @@ class Agent:
                 enhanced_descriptions.append(tool)
         return "\n".join(enhanced_descriptions)
 
-    async def think_async(self, prompt, previous_tools_data=None):
+    def think(self, prompt, previous_tools_data=None):
         """
-        Async version of the thinking step
+        Enhanced thinking step that can consider previous tool outputs
         """
         tool_descriptions = self.prepare_tools()
         agent_system_prompt = agent_system_prompt_template.format(
@@ -104,7 +101,7 @@ class Agent:
             temperature=0
         )
 
-        response = await model_instance.agenerate_text(thinking_prompt)
+        response = model_instance.generate_text(thinking_prompt)
         
         # Ensure we have a proper JSON response
         if isinstance(response, str):
@@ -160,9 +157,9 @@ class Agent:
         except Exception as e:
             return f"Error executing tool {tool_choice}: {str(e)}"
 
-    async def analyze_tool_output_async(self, original_prompt, tool_choice, tool_input, tool_response, previous_tools_data=None):
+    def analyze_tool_output(self, original_prompt, tool_choice, tool_input, tool_response, previous_tools_data=None):
         """
-        Async version of analyze_tool_output
+        Analyze the output of a tool to extract insights
         """
         analysis_prompt = f"""
         Original user query: {original_prompt}
@@ -184,106 +181,19 @@ class Agent:
             temperature=0
         )
 
-        analysis = await model_instance.agenerate_text(analysis_prompt)
+        analysis = model_instance.generate_text(analysis_prompt)
         
         return analysis
 
-    async def stream_with_queue(self, prompt, tools_data):
+    def work(self, prompt):
         """
-        Stream the final answer using a queue-based approach
-        """
-        # Create a queue for streaming tokens
-        queue = asyncio.Queue()
-        
-        # Create a callback handler that will put tokens into the queue
-        callback_handler = QueueCallbackHandler(queue)
-        
-        # Create a task that will generate the response and stream tokens to the queue
-        async def generate_response():
-            try:
-                if not tools_data:
-                    # No tools were used, provide direct response
-                    model_instance = self.model_service(
-                        model=self.model_name,
-                        system_prompt="You are a helpful dealership assistant providing direct answers.",
-                        temperature=0
-                    )
-                    streaming_chat = model_instance.get_streaming_chat(callbacks=[callback_handler])
-                    
-                    messages = [
-                        SystemMessage(content=model_instance.system_prompt) if model_instance.system_prompt else None,
-                        HumanMessage(content=prompt)
-                    ]
-                    messages = [m for m in messages if m is not None]
-                    
-                    await streaming_chat.ainvoke(messages)
-                else:
-                    # Format all tool data for the completion prompt
-                    tools_summary = ""
-                    for i, data in enumerate(tools_data):
-                        tools_summary += f"Tool {i+1}: {data['tool']}\n"
-                        tools_summary += f"Input: {json.dumps(data['input'], indent=2)}\n"
-                        tools_summary += f"Response: {json.dumps(data['response'], indent=2) if isinstance(data['response'], (dict, list)) else data['response']}\n"
-                        tools_summary += f"Analysis: {data['analysis']}\n\n"
-                    
-                    completion_prompt = f"""
-                    Original user query: {prompt}
-                    
-                    Tool executions and analyses:
-                    {tools_summary}
-                    
-                    Based on all the above information, provide a complete, helpful, and persuasive answer to the user's original query.
-                    Integrate insights from all tools used to create a comprehensive response.
-                    Remember you are a dealership assistant trying to convince the customer to purchase products and book an appointment.
-                    Use the same language the user provided in their query.
-                    Be concise and direct in your response.
-                    """
-                    
-                    model_instance = self.model_service(
-                        model=self.model_name,
-                        system_prompt="You are a helpful dealership assistant providing complete answers based on tool responses.",
-                        temperature=0
-                    )
-                    
-                    streaming_chat = model_instance.get_streaming_chat(callbacks=[callback_handler])
-                    
-                    messages = [
-                        SystemMessage(content=model_instance.system_prompt) if model_instance.system_prompt else None,
-                        HumanMessage(content=completion_prompt)
-                    ]
-                    messages = [m for m in messages if m is not None]
-                    
-                    await streaming_chat.ainvoke(messages)
-            except Exception as e:
-                # Put the error in the queue
-                await queue.put(f"Error: {str(e)}")
-            finally:
-                # Signal that we're done
-                await queue.put("[DONE]")
-        
-        # Start the task
-        asyncio.create_task(generate_response())
-        
-        # Yield tokens from the queue
-        while True:
-            token = await queue.get()
-            if token == "[DONE]":
-                break
-            yield f"data: {token}\n\n"
-        
-        # Final done message
-        yield "data: [DONE]\n\n"
-
-    async def work_stream(self, prompt):
-        
-        """
-        Streaming version of the work method that returns a FastAPI StreamingResponse
+        Enhanced work method that can use multiple tools sequentially
         """
         tools_data = []  # Store data from all tool executions
         max_tool_calls = 4  # Prevent infinite loops
         
         # First thinking step
-        agent_response = await self.think_async(prompt)
+        agent_response = self.think(prompt)
         
         tool_choice = agent_response.get("tool_choice")
         tool_input = agent_response.get("tool_input")
@@ -292,13 +202,18 @@ class Agent:
         
         tool_call_count = 0
         
-        # Execute tools if needed
         while tool_choice != "no tool" and tool_call_count < max_tool_calls:
+            print(f"Debug - Tool chosen: {tool_choice}")
+            print(f"Debug - Tool input: {tool_input}")
+            print(f"Debug - Reasoning: {reasoning}")
+            
             # Execute the tool
             tool_response = self.execute_tool(tool_choice, tool_input)
+            print(f"Debug - Tool response: {tool_response}")
             
             # Analyze the tool output
-            analysis = await self.analyze_tool_output_async(prompt, tool_choice, tool_input, tool_response, tools_data if tools_data else None)
+            analysis = self.analyze_tool_output(prompt, tool_choice, tool_input, tool_response, tools_data if tools_data else None)
+            print(f"Debug - Analysis: {analysis}")
             
             # Store this tool execution data
             tools_data.append({
@@ -316,16 +231,63 @@ class Agent:
                 break
                 
             # Think again with the accumulated tool data
-            agent_response = await self.think_async(prompt, tools_data)
+            agent_response = self.think(prompt, tools_data)
             
             tool_choice = agent_response.get("tool_choice")
             tool_input = agent_response.get("tool_input")
             needs_more_tools = agent_response.get("needs_more_tools", False)
             reasoning = agent_response.get("reasoning", "")
         
-        # Return a streaming response
-        return StreamingResponse(
-            self.stream_with_queue(prompt, tools_data),
-            media_type="text/event-stream"
+        # Generate the final answer
+        return self.generate_complete_answer(prompt, tools_data)
+
+    def generate_complete_answer(self, original_prompt, tools_data):
+        """
+        Generate a complete answer based on all tool executions
+        """
+        if not tools_data:
+            # No tools were used, provide direct response
+            model_instance = self.model_service(
+                model=self.model_name,
+                system_prompt="You are a helpful dealership assistant providing direct answers.",
+                temperature=0
+            )
+            return model_instance.generate_text(original_prompt)
+        
+        # Format all tool data for the completion prompt
+        tools_summary = ""
+        for i, data in enumerate(tools_data):
+            tools_summary += f"Tool {i+1}: {data['tool']}\n"
+            tools_summary += f"Input: {json.dumps(data['input'], indent=2)}\n"
+            tools_summary += f"Response: {json.dumps(data['response'], indent=2) if isinstance(data['response'], (dict, list)) else data['response']}\n"
+            tools_summary += f"Analysis: {data['analysis']}\n\n"
+        
+        completion_prompt = f"""
+        Original user query: {original_prompt}
+        
+        Tool executions and analyses:
+        {tools_summary}
+        
+        Based on all the above information, provide a complete, helpful, and persuasive answer to the user's original query.
+        Integrate insights from all tools used to create a comprehensive response.
+        Remember you are a dealership assistant trying to convince the customer to purchase products and book an appointment.
+        Use the same language the user provided in their query.
+        Be concise and direct in your response.
+        """
+        
+        model_instance = self.model_service(
+            model=self.model_name,
+            system_prompt="You are a helpful dealership assistant providing complete answers based on tool responses.",
+            temperature=0
         )
+
+        complete_answer = model_instance.generate_text(completion_prompt)
+        if isinstance(complete_answer, dict):
+            return complete_answer.get('tool_input', 'Sorry, I could not generate a complete answer.')
+        return complete_answer
     
+    
+
+            
+            
+            
